@@ -39,10 +39,10 @@ def get_targets(blendshape_node, names_only=False):
     """ Get the blendShape node connected to the given meshes.
 
         Args:
-            blendshape_node(str): The name or list of meshes.
+            blendshape_node(str): Name
             names_only(bool):
         Returns:
-            list: The blendShape nodes.
+            list or dictionary: A list of target names or a dictionary of target index(key) and names(value).
         """
     # Check if blendshape_node is a PyNode; if it is, convert it to a string."
     blendshape_node = blendshape_node.name() if isinstance(blendshape_node, pm.general.PyNode) else blendshape_node
