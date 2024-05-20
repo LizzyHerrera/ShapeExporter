@@ -1,8 +1,6 @@
 # ********************************************************************
 # Project Utility Functions Module
 # A collection of utility functions to support various tasks within the project.
-
-# NOTE: Make sure to use python 3.8.0 or higher.
 # ********************************************************************
 import copy
 
@@ -89,7 +87,8 @@ def get_deltas(base_verts, target_verts, zero_threshold=0.001, clean_data=True):
         Args:
             base_verts (dict): Base mesh vertices id(key) and coords(value).
             target_verts (dict): Target mesh vertices id(key) and coords(value).
-            zero_threshold (float): Value to consider a delta significant. Defaults to 0.00001
+            zero_threshold (float): Value to consider a delta significant. Defaults to 0.001
+            clean_data (bool) :
 
         Returns:
             dict: A dictionary containing the deltas between common vertices of base and target meshes.
@@ -139,3 +138,6 @@ def export_blendshape_data(blendshape_node, path):
             tgt_mesh = tgt
         else:
             tgt_mesh = base_mesh
+
+def import_blendshape_date():
+    pass
