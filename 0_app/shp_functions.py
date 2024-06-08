@@ -5,6 +5,7 @@
 import copy
 import os
 import json
+from copy import deepcopy
 
 import numpy as np
 
@@ -12,7 +13,7 @@ import maya.cmds as mc
 import pymel.core as pm
 import pymel.core.nodetypes as nt
 
-import utils
+import shp_utils
 
 def get_blendshape_nodes(meshes):
     """ Get the blendShape node connected to the given meshes.
@@ -25,7 +26,7 @@ def get_blendshape_nodes(meshes):
     """
 
     # Convert into a list if str
-    meshes = utils.convert_to_list(meshes)
+    meshes = shp_utils.convert_to_list(meshes)
     blend_nodes = []
     for mesh in meshes:
         mesh = pm.PyNode(mesh) if isinstance(mesh, str) else mesh
@@ -126,23 +127,23 @@ def get_deltas(base_verts, target_verts, zero_threshold=0.001, clean_data=True):
     return clean_deltas if has_data else None
 
 
-def check_delta_path(path, new=True):
+def check_delta_path(path, mesh, blendshape_name, new=True):
 
-    export_path = os.path.join(path, 'Export')
-    shapes_path = os.path.join(export_path, 'blendshapes')
+    mesh_path = os.path.join(path, mesh)
+    shapes_path = os.path.join(mesh_path, blendshape_name)
 
-    if not os.path.isdir(export_path):
-        os.makedirs(export_path)
+    if not os.path.isdir(mesh_path):
+        os.makedirs(mesh_path)
     elif not os.path.isdir(shapes_path):
         os.makedirs(shapes_path)
 
     if os.path.isdir(shapes_path):
-        delta_files = os.listdir(shapes_path)
+        '''delta_files = os.listdir(shapes_path)
 
         if delta_files:
             print("There's data in the folder")
         else:
-            print("There's no data yet")
+            print("There's no data yet")'''
 
         return shapes_path
 
@@ -152,10 +153,9 @@ def export_delta_from_blendshape(blendshape_node, path):
     blendshape_node = pm.PyNode(blendshape_node) if isinstance(blendshape_node, str) else blendshape_node
     base_mesh = get_base_object(blendshape_node)
     base_mesh_vtx = get_verts_id_coords(base_mesh)
-    export_path = check_delta_path(path)
+    export_path = check_delta_path(path, base_mesh, blendshape_node.name())
     target_names = get_targets(blendshape_node, names_only=True)
     exported = []
-
     for target_name in target_names:
         mc.setAttr(blendshape_node.name() + '.' + target_name, 1)
         if mc.objExists(target_name):
@@ -168,13 +168,28 @@ def export_delta_from_blendshape(blendshape_node, path):
         mc.setAttr(blendshape_node.name() + '.' + target_name, 0)
 
         if delta_data:
-            utils.export_json(delta_data, str(target_name) + '_bShape.json', export_path)
-            exported.append(target_name)
+            name = f"{target_name}_bShape.json"
+            out_data = {}
+            for key in delta_data:
+                out_data[key] = list(delta_data[key])
 
-        return export_path, exported
+            export_data = deepcopy(shp_utils.EXPORT)  # Create a deep copy of the EXPORT dictionary
+            export_data['deltas']['current_version'] = out_data
+            export_data['blendshape_name'] = blendshape_node.name()
 
-def export_deltas_from_meshes(meshes):
-    pass
+            with open(os.path.join(export_path, name), "w") as file:
+                json.dump(export_data, file, indent=1)
+
+        exported.append(target_name)
+
+    return export_path, exported
+
+def export_deltas_from_meshes(meshes,path):
+
+    blend_nodes = get_blendshape_nodes(meshes)
+
+    for node in blend_nodes:
+        export_delta_from_blendshape(node,path)
 
 def import_blendshape_data():
     pass

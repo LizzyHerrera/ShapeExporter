@@ -1,7 +1,7 @@
 # ********************************************************************
 # A collection of utility functions for use in Autodesk Maya.
 # ********************************************************************
-
+import os
 import json
 
 import maya.cmds as mc
@@ -31,10 +31,10 @@ def convert_to_list(input):
     return list(input) if isinstance(input, str) else input
 
 
-def export_json(data, name, path):
+def export_json_file(data, name, path):
     out_data = {}
     for key in data:
-        out_data[key] = list(delta_data[key])
+        out_data[key] = list(data[key])
     with open(os.path.join(path, name), "w") as file:
         json.dump(out_data, file)
 
