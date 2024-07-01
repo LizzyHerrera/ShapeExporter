@@ -4,9 +4,17 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="test" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="GOOGLE" />
     <option name="myDocStringFormat" value="Google" />
+  </component>
+  <component name="PyNamespacePackagesService">
+    <option name="namespacePackageFolders">
+      <list>
+        <option value="$MODULE_DIR$/0_app/shp_ui" />
+      </list>
+    </option>
   </component>
 </module>
