@@ -1,7 +1,6 @@
 import maya.cmds as mc
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 from PySide2 import QtWidgets, QtGui, QtCore
-import os
 import shp_functions as fn
 
 class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
@@ -26,7 +25,7 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
         # File Loader Section
         self.file_loader_widget = QtWidgets.QWidget()
         self.file_loader_layout = QtWidgets.QHBoxLayout(self.file_loader_widget)
-        self.file_label = QtWidgets.QLabel("File:")
+        self.file_label = QtWidgets.QLabel("Directory:")
         self.search_file_lineEdit = QtWidgets.QLineEdit()
         self.search_file_btn = QtWidgets.QPushButton("...")
         self.file_loader_layout.addWidget(self.file_label)
@@ -71,7 +70,7 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
         self.exp_type_layout = QtWidgets.QHBoxLayout()
         self.exp_type_label = QtWidgets.QLabel("Type:")
         self.exp_comboBox = QtWidgets.QComboBox()
-        self.exp_comboBox.addItem("Data")
+        self.exp_comboBox.addItem("JSON")
         self.exp_comboBox.addItem("FBX")
         self.exp_comboBox.addItem("OBJ")
 
@@ -121,7 +120,7 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
         self.imp_type_layout = QtWidgets.QHBoxLayout()
         self.imp_type_label = QtWidgets.QLabel("Type:")
         self.imp_comboBox = QtWidgets.QComboBox()
-        self.imp_comboBox.addItem("Data")
+        self.imp_comboBox.addItem("JSON")
         self.imp_comboBox.addItem("FBX")
         self.imp_comboBox.addItem("OBJ")
 
@@ -224,3 +223,8 @@ class CustomFileSystemModel(QtWidgets.QFileSystemModel):
         if role == QtCore.Qt.DecorationRole:
             return None
         return super(CustomFileSystemModel, self).data(index, role)
+
+
+###################################################################################
+
+
