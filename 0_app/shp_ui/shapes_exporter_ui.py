@@ -225,6 +225,5 @@ class CustomFileSystemModel(QtWidgets.QFileSystemModel):
         return super(CustomFileSystemModel, self).data(index, role)
 
 
-###################################################################################
 
 
