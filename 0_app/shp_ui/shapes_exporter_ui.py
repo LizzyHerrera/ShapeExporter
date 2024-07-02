@@ -2,6 +2,7 @@ import maya.cmds as mc
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 from PySide2 import QtWidgets, QtGui, QtCore
 import shp_functions as fn
+import webbrowser
 
 class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
 
@@ -15,6 +16,10 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
 
         self.setup_ui()
 
+        self.search_file_lineEdit.textChanged.connect(self.update_tab_status)
+
+        self.update_tab_status()
+
     def setup_ui(self):
         self.central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)
@@ -25,7 +30,7 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
         # File Loader Section
         self.file_loader_widget = QtWidgets.QWidget()
         self.file_loader_layout = QtWidgets.QHBoxLayout(self.file_loader_widget)
-        self.file_label = QtWidgets.QLabel("Directory:")
+        self.file_label = QtWidgets.QLabel("Set Dir:")
         self.search_file_lineEdit = QtWidgets.QLineEdit()
         self.search_file_btn = QtWidgets.QPushButton("...")
         self.file_loader_layout.addWidget(self.file_label)
@@ -144,7 +149,7 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
 
         self.imp_versions_layout = QtWidgets.QHBoxLayout()
         self.imp_versions_label = QtWidgets.QLabel("Version:")
-        self.imp_number_version_label = QtWidgets.QLabel("#")
+        self.imp_number_version_label = QtWidgets.QLabel()
 
         self.imp_versions_sel_layout = QtWidgets.QHBoxLayout()
         self.imp_new_ver_btn = QtWidgets.QRadioButton("Latest")
@@ -171,12 +176,10 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
 
         # Menubar
         self.menu_bar = self.menuBar()
-        self.settings_menu = self.menu_bar.addMenu("Settings")
         self.help_menu = self.menu_bar.addMenu("Help")
-        self.reset_action = QtWidgets.QAction("Reset", self)
         self.documentation_action = QtWidgets.QAction("Documentation", self)
-        self.settings_menu.addAction(self.reset_action)
         self.help_menu.addAction(self.documentation_action)
+        self.documentation_action.triggered.connect(self.press_help)
 
         # Connect signals
         self.search_file_btn.clicked.connect(self.open_file_dialog)
@@ -193,10 +196,25 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
             self.populate_tree_view(dir_path)
 
     def populate_tree_view(self, dir_path):
+        # Create a custom model
         model = CustomFileSystemModel()
         model.setRootPath(dir_path)
+
+        # Check if items exist in Maya
+        root_index = model.index(dir_path)
+        num_rows = model.rowCount(root_index)
+
+        for row in range(num_rows):
+            index = model.index(row, 0, root_index)
+            file_name = model.fileName(index)
+
+            if not mc.objExists(file_name):
+                # Hide the item if it does not exist in Maya
+                self.shapes_treeView.setRowHidden(row, root_index, True)
+
+        # Set the model and root index for the tree view
         self.shapes_treeView.setModel(model)
-        self.shapes_treeView.setRootIndex(model.index(dir_path))
+        self.shapes_treeView.setRootIndex(root_index)
         self.shapes_treeView.hideColumn(1)  # Hide size column
         self.shapes_treeView.hideColumn(2)  # Hide type column
         self.shapes_treeView.hideColumn(3)  # Hide date column
@@ -217,6 +235,30 @@ class ShapesExporterUI(MayaQWidgetDockableMixin, QtWidgets.QMainWindow):
     def dockCloseEventTriggered(self):
         """fully delete the windows when X is pressed"""
         mc.deleteUI("{}WorkspaceControl".format(ShapesExporterUI.UI_NAME))
+
+    def update_tab_status(self):
+        dir_enable = bool(self.search_file_lineEdit.text())
+        #mesh = mesh_name
+        mesh_enable = False
+        #file_enable = bool()
+
+        ix_export_scn_tab = self.export_import_widget.indexOf(self.export_from_scn_tab)
+        self.export_import_widget.setTabEnabled(ix_export_scn_tab, dir_enable)
+
+        ix_export_tab = self.export_import_widget.indexOf(self.export_tab)
+        self.export_import_widget.setTabEnabled(ix_export_tab, dir_enable)
+
+        ix_import_tab = self.export_import_widget.indexOf(self.import_tab)
+        self.export_import_widget.setTabEnabled(ix_import_tab, dir_enable)
+
+        # Set the current tab to the first tab that is enabled
+        self.export_import_widget.setCurrentIndex(0)
+
+    def press_help(self):
+        webbrowser.open("https://github.com/LizzyHerrera/ShapeExporter")
+
+    def populate_version(self):
+        pass
 
 class CustomFileSystemModel(QtWidgets.QFileSystemModel):
     def data(self, index, role=QtCore.Qt.DisplayRole):
