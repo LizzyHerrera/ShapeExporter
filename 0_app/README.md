@@ -24,7 +24,9 @@ The UI is designed to be intuitive and user-friendly, with the following structu
 - Tree View: Displays the blendshapes in a hierarchical structure:
 
 ---Mesh Name
+
 ------Blendshape Name 
+
 ----------Target Name
 
 ![shapeExporter2](https://github.com/LizzyHerrera/ShapeExporter/assets/109104254/6918793b-6fd4-43f7-ab2b-c9a62359d258)
