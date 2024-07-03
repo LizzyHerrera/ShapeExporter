@@ -4,22 +4,44 @@
 
 ## Description
 
-This tool facilitates efficient exporting of blendshape deltas from Maya to JSON files, supporting version control and streamlined workflows.
+ShapeExporter is a tool designed to assist 3D modelers?riggers in Maya by simplifying the process of exporting blendshapes as deltas and managing versions of deltas. This tool is part of a development project for the Python Advanced course taught by Alexander Richter.
 
-- Features Export Deltas: Export blendshape delta information as JSON files. 
-- Version Control: Supports maintaining the latest and previous versions of blendshape deltas. 
-- UI Integration: Intuitive UI with options to export from selected meshes or all meshes. 
-- Path Management: Automatically manages directory structure for exported data. 
-- Tree View Display: Organizes blendshape data in a hierarchical structure: 
+## Features
+### Blendshape Exporter
+- Export from Selected: Export deltas from selected blendshapes.
+- Export from All: Export deltas from all blendshapes.
+- New Version: Save deltas as a new version.
+- Overwrite Latest: Overwrite the latest version of deltas.
+### Import Blendshapes
+- Import Selected: Import deltas into selected blendshapes.
+- Import All: Import deltas into all blendshapes.
+- Latest Version: Import the latest version of deltas.
+- Previous Version: Import the previous version of deltas.
+
+## UI Overview
+The UI is designed to be intuitive and user-friendly, with the following structure:
+
+- Tree View: Displays the blendshapes in a hierarchical structure:
 
 ---Mesh Name
-
 ------Blendshape Name 
-
 ----------Target Name
 
 ![shapeExporter2](https://github.com/LizzyHerrera/ShapeExporter/assets/109104254/6918793b-6fd4-43f7-ab2b-c9a62359d258)
 
+- Export Options: 1. Selected 2. All
+- Version Options: 1. New Version 2.Overwrite Latest
+
+## JSON Structure
+The exported JSON files follow a specific structure, ensuring that all necessary data is captured and easily accessible. Below is an example of the JSON structure:
+![image](https://github.com/LizzyHerrera/ShapeExporter/assets/109104254/920f70b2-1760-427d-9ad8-89222268dc4a)
+
+Explanation of Fields:
+- mesh_name: The name of the base mesh.
+- blendshape_name: The name of the blendshape node.
+- deltas:
+------latest_version: Contains the latest delta data.
+------previous_version: Contains the previous delta data.
 
 ## Usage
 Usage Export Options: 
