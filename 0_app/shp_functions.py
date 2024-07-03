@@ -4,8 +4,6 @@
 # ********************************************************************
 import copy
 import os
-import json
-from copy import deepcopy
 
 import numpy as np
 
@@ -30,7 +28,8 @@ def get_blendshape_nodes(meshes):
     blend_nodes = []
     for mesh in meshes:
         mesh = pm.PyNode(mesh) if isinstance(mesh, str) else mesh
-        blend_nodes = [node for node in mesh.history(type='blendShape')]
+        for node in mesh.history(type='blendShape'):
+            blend_nodes.append(node)
 
     return blend_nodes
 
@@ -127,36 +126,49 @@ def get_deltas(base_verts, target_verts, zero_threshold=0.001, clean_data=True):
     return clean_deltas if has_data else None
 
 
-def check_delta_path(path, mesh, blendshape_name, new=True):
+def check_delta_path(path, mesh, blendshape_node):
+    """
+        Check and create necessary directories for exporting deltas.
 
-    mesh_path = os.path.join(path, mesh)
-    shapes_path = os.path.join(mesh_path, blendshape_name)
+        Args:
+            path: The base directory path.
+            mesh: The mesh name.
+            blendshape_node: The blendshape node name.
 
-    if not os.path.isdir(mesh_path):
-        os.makedirs(mesh_path)
-    elif not os.path.isdir(shapes_path):
+        Returns:
+            The final export path.
+    """
+
+    # Construct the full path for saving deltas
+    shapes_path = os.path.join(path, mesh, blendshape_node)
+
+    if not os.path.exists(shapes_path):
         os.makedirs(shapes_path)
 
-    if os.path.isdir(shapes_path):
-        '''delta_files = os.listdir(shapes_path)
-
-        if delta_files:
-            print("There's data in the folder")
-        else:
-            print("There's no data yet")'''
-
-        return shapes_path
+    return shapes_path
 
 
-def export_delta_from_blendshape(blendshape_node, path):
+def export_delta_from_blendshape(blendshape_node, path, version):
+    """
+    Export delta data from a blendshape node.
 
+    Args:
+        blendshape_node: Pymel blendShape node
+        path: The directory path.
+        version: The version type ('latest_version' or 'previous_version').
+
+    Returns:
+        The export path and a list of exported target names.
+    """
     blendshape_node = pm.PyNode(blendshape_node) if isinstance(blendshape_node, str) else blendshape_node
     base_mesh = get_base_object(blendshape_node)
     base_mesh_vtx = get_verts_id_coords(base_mesh)
     export_path = check_delta_path(path, base_mesh, blendshape_node.name())
     target_names = get_targets(blendshape_node, names_only=True)
+
     exported = []
     for target_name in target_names:
+        # Activate the target blendshape
         mc.setAttr(blendshape_node.name() + '.' + target_name, 1)
         if mc.objExists(target_name):
             target_mesh = target_name
@@ -169,27 +181,95 @@ def export_delta_from_blendshape(blendshape_node, path):
 
         if delta_data:
             name = f"{target_name}_bShape.json"
+            out_data = {key: list(delta_data[key]) for key in delta_data}
+
+            file_path = os.path.join(export_path, name)
+            export_data = shp_utils.load_EXPORT_data(file_path)
+
+            export_data['mesh_name'] = base_mesh
+            export_data['blendshape_name'] = blendshape_node.name()
+
+            # Update the version data
+            # TODO: Modify this part to handle multiple versioning and not only two.
+            if version == 'latest_version':
+                export_data['deltas']['previous_version'] = export_data['deltas']['latest_version']
+                export_data['deltas']['latest_version'] = out_data
+            else:  # This part is actually redundant because 'latest_version' is the only version used
+                export_data['deltas']['latest_version'] = out_data
+
+            shp_utils.save_data(export_data, file_path)
+
+        exported.append(target_name)
+
+        return export_path, exported
+
+
+def export_deltas_from_meshes(meshes,path,version):
+    blend_nodes = get_blendshape_nodes(meshes)
+    if blend_nodes:
+        for node in blend_nodes:
+            export_delta_from_blendshape(node,path,version)
+
+def apply_deltas(target,base_verts,deltas):
+    """
+    Applies deltas to target mesh.
+
+    Args:
+        target(str): Mesh you're applying deltas to.
+        base_verts(list): input base verts
+        deltas: input deltas from json file
+
+    """
+    transform = pm.nodetypes.Transform(target)
+    shape = pm.nodetypes.Mesh(transform.getShape())
+    for delta in deltas:
+        shape.setPoint(int(delta), pm.datatypes.Point(base_verts[delta]) + pm.datatypes.Point(deltas[delta]))
+
+def import_deltas(base_mesh, dirpath):
+    #TODO: Finish the import function
+
+    base_verts = get_verts_id_coords(base_mesh)
+    imported = 0
+
+    if os.path.isfile(dirpath):
+        file_names = [dirpath]
+    else:
+        base_mesh_name = str(base_mesh)
+        if not dirpath.endswith(base_mesh_name):
+            dirpath = os.path.join(dirpath, base_mesh_name)
+        file_names = [item for item in os.listdir(dirpath) if item.endswith('.json')]
+
+    target_grp = 'targetGrp'
+    if not mc.objExists(target_grp):
+        mc.createNode('transform', n=target_grp)
+        mc.setAttr(target_grp+'.v', 0)
+
+    target_names = list()
+    for ix, filename in enumerate(file_names):
+        if '_bShape' in filename:
+            target_name = filename.split('_bShape')[0]
+        else:  # just looks for targetName
+            target_name = filename.split('.')[0]
+        target_names.append(target_name)
+    pass
+
+###################################################################################################################
+
+# TESTING
+'''if delta_data:
+            name = f"{target_name}_bShape.json"
             out_data = {}
             for key in delta_data:
                 out_data[key] = list(delta_data[key])
 
             export_data = deepcopy(shp_utils.EXPORT)  # Create a deep copy of the EXPORT dictionary
-            export_data['deltas']['current_version'] = out_data
+            export_data['mesh_name'] = base_mesh
             export_data['blendshape_name'] = blendshape_node.name()
+            export_data['deltas'][version] = out_data
 
             with open(os.path.join(export_path, name), "w") as file:
                 json.dump(export_data, file, indent=1)
 
         exported.append(target_name)
 
-    return export_path, exported
-
-def export_deltas_from_meshes(meshes,path):
-
-    blend_nodes = get_blendshape_nodes(meshes)
-
-    for node in blend_nodes:
-        export_delta_from_blendshape(node,path)
-
-def import_blendshape_data():
-    pass
+    return export_path, exported'''
