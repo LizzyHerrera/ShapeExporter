@@ -36,6 +36,7 @@ The UI is designed to be intuitive and user-friendly, with the following structu
 
 ## JSON Structure
 The exported JSON files follow a specific structure, ensuring that all necessary data is captured and easily accessible. Below is an example of the JSON structure:
+
 ![image](https://github.com/LizzyHerrera/ShapeExporter/assets/109104254/920f70b2-1760-427d-9ad8-89222268dc4a)
 
 Explanation of Fields:
