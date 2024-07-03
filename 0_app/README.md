@@ -43,7 +43,9 @@ Explanation of Fields:
 - mesh_name: The name of the base mesh.
 - blendshape_name: The name of the blendshape node.
 - deltas:
+- 
 ------latest_version: Contains the latest delta data.
+  
 ------previous_version: Contains the previous delta data.
 
 ## Usage
