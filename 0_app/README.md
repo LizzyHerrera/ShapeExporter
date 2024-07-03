@@ -1,5 +1,5 @@
 
-# <Shape Exporter Tool for Autodesk Maya>
+# Shape Exporter Tool for Autodesk Maya
 ![shapeExporter](https://github.com/LizzyHerrera/ShapeExporter/assets/109104254/1caed251-c079-400a-a3dd-20c91d651067)
 
 ## Description
@@ -12,8 +12,10 @@ This tool facilitates efficient exporting of blendshape deltas from Maya to JSON
 - Path Management: Automatically manages directory structure for exported data. 
 - Tree View Display: Organizes blendshape data in a hierarchical structure: 
 
----Mesh Name 
+---Mesh Name
+
 ------Blendshape Name 
+
 ----------Target Name
 
 ![shapeExporter2](https://github.com/LizzyHerrera/ShapeExporter/assets/109104254/6918793b-6fd4-43f7-ab2b-c9a62359d258)
